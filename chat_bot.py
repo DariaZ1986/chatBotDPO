@@ -1,4 +1,3 @@
-# main.py
 import os
 import json
 import logging
@@ -13,9 +12,11 @@ from telegram.ext import (
     filters,
 )
 
+# --- Logging ---
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# --- Load environment ---
 load_dotenv()
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 CHANNEL_ID = os.getenv("CHANNEL_ID")  # e.g. @mychannel or -1001234567890
@@ -23,12 +24,14 @@ CHANNEL_ID = os.getenv("CHANNEL_ID")  # e.g. @mychannel or -1001234567890
 if not BOT_TOKEN:
     raise RuntimeError("BOT_TOKEN not found in .env")
 
-# load programs
+# --- Load data files ---
 with open("programs.json", "r", encoding="utf-8") as f:
     DATA = json.load(f)
 
+with open("faq.json", "r", encoding="utf-8") as f:
+    FAQ_DATA = json.load(f)
 
-# --- helpers to find items ---
+# --- Helpers ---
 def find_direction_by_id(dir_id):
     for d in DATA.get("directions", []):
         if d["id"] == dir_id:
@@ -44,31 +47,27 @@ def find_program_by_id(prog_id):
     return None, None
 
 
-# --- keyboards ---
+# --- Keyboards ---
 def main_menu_kb():
     kb = [
         [InlineKeyboardButton("FAQ", callback_data="menu_faq")],
-        [InlineKeyboardButton("Посмотреть программы",
-                              callback_data="menu_programs")],
-        [InlineKeyboardButton("Оставить заявку на программу",
-                              callback_data="menu_apply")]
+        [InlineKeyboardButton("Посмотреть программы", callback_data="menu_programs")],
+        [InlineKeyboardButton("Оставить заявку на программу", callback_data="menu_apply")]
     ]
     return InlineKeyboardMarkup(kb)
 
 
 def back_to_main_kb():
     return InlineKeyboardMarkup(
-        [[InlineKeyboardButton("◀ Главное меню",
-                               callback_data="back_main")]])
+        [[InlineKeyboardButton("◀ Главное меню", callback_data="back_main")]]
+    )
 
 
 def directions_kb():
     buttons = []
     for d in DATA.get("directions", []):
-        buttons.append([InlineKeyboardButton(d["name"],
-                                             callback_data=f"dir_{d['id']}")])
-    buttons.append([InlineKeyboardButton("◀ Главное меню",
-                                         callback_data="back_main")])
+        buttons.append([InlineKeyboardButton(d["name"], callback_data=f"dir_{d['id']}")])
+    buttons.append([InlineKeyboardButton("◀ Главное меню", callback_data="back_main")])
     return InlineKeyboardMarkup(buttons)
 
 
@@ -78,19 +77,15 @@ def programs_kb(dir_id):
     if not d:
         return back_to_main_kb()
     for p in d.get("programs", []):
-        buttons.append([InlineKeyboardButton(p["name"],
-                                             callback_data=f"prog_{p['id']}")])
-    buttons.append([InlineKeyboardButton("◀ Назад",
-                                         callback_data="menu_programs")])
-    buttons.append([InlineKeyboardButton("◀ Главное меню",
-                                         callback_data="back_main")])
+        buttons.append([InlineKeyboardButton(p["name"], callback_data=f"prog_{p['id']}")])
+    buttons.append([InlineKeyboardButton("◀ Назад", callback_data="menu_programs")])
+    buttons.append([InlineKeyboardButton("◀ Главное меню", callback_data="back_main")])
     return InlineKeyboardMarkup(buttons)
 
 
 def program_detail_kb(prog_id, dir_id):
     kb = [
-        [InlineKeyboardButton("Оставить заявку на эту программу",
-                              callback_data=f"apply_prog_{prog_id}")],
+        [InlineKeyboardButton("Оставить заявку на эту программу", callback_data=f"apply_prog_{prog_id}")],
         [InlineKeyboardButton("◀ Назад", callback_data=f"dir_{dir_id}")],
         [InlineKeyboardButton("◀ Главное меню", callback_data="back_main")],
     ]
@@ -104,65 +99,99 @@ def confirm_kb():
     ])
 
 
-# --- handlers ---
+# --- FAQ Keyboards ---
+def faq_categories_kb():
+    """Клавиатура со списком категорий FAQ"""
+    kb = []
+    for i, cat in enumerate(FAQ_DATA.get("faq", [])):
+        kb.append([InlineKeyboardButton(cat["category"], callback_data=f"faq_cat_{i}")])
+    kb.append([InlineKeyboardButton("◀ Главное меню", callback_data="back_main")])
+    return InlineKeyboardMarkup(kb)
+
+
+def faq_questions_kb(cat_index: int):
+    """Клавиатура со списком вопросов в категории"""
+    cat = FAQ_DATA["faq"][cat_index]
+    kb = []
+    for j, q in enumerate(cat["questions"]):
+        text = q.get("q", "")
+        short = text[:60] + ("..." if len(text) > 60 else "")
+        kb.append([InlineKeyboardButton(short, callback_data=f"faq_q_{cat_index}_{j}")])
+    kb.append([InlineKeyboardButton("◀ Назад", callback_data="menu_faq")])
+    kb.append([InlineKeyboardButton("◀ Главное меню", callback_data="back_main")])
+    return InlineKeyboardMarkup(kb)
+
+
+# --- Handlers ---
 async def start_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.message:
-        await update.message.reply_text("Привет! Выберите действие:",
-                                        reply_markup=main_menu_kb())
+        await update.message.reply_text("Привет! Выберите действие:", reply_markup=main_menu_kb())
     else:
-        # safety: if called from callback
-        await update.callback_query.message.edit_text(
-            "Привет! Выберите действие:", reply_markup=main_menu_kb())
-
-
-FAQ_TEXT = (
-    "FAQ:\n"
-    "1) Как записаться? — Нажмите 'Посмотреть программы' и выберите программу,"
-    "затем 'Оставить заявку', "
-    "либо 'Оставить заявку на программу' в главном меню.\n"
-    "2) Как оплатить? — Оплата оговаривается после отправки заявки.\n"
-    "3) и т.д."
-)
+        await update.callback_query.message.edit_text("Привет! Выберите действие:", reply_markup=main_menu_kb())
 
 
 async def callbacks(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     data = query.data
-    await query.answer()  # убирает крутилку у пользователя
+    await query.answer()
 
-    # Главное меню
+    # --- Главное меню ---
     if data == "back_main":
-        await query.message.edit_text("Главное меню:",
-                                      reply_markup=main_menu_kb())
+        await query.message.edit_text("Главное меню:", reply_markup=main_menu_kb())
         return
 
+    # --- FAQ ---
+        # --- FAQ ---
     if data == "menu_faq":
-        await query.message.edit_text(FAQ_TEXT, reply_markup=back_to_main_kb())
+        await query.message.edit_text(
+            "📚 Выберите категорию часто задаваемых вопросов:",
+            reply_markup=faq_categories_kb()
+        )
         return
 
+    if data.startswith("faq_cat_"):
+        cat_index = int(data.split("faq_cat_", 1)[1])
+        cat = FAQ_DATA["faq"][cat_index]
+
+        # Формируем текст со всеми вопросами и ответами
+        text_parts = [f"📂 *{cat['category']}*\n"]
+        for q in cat["questions"]:
+            question = q.get("q", "Вопрос не найден.")
+            answer = q.get("a", "Ответ уточняется.")
+            text_parts.append(f"❓ *{question}*\n💬 {answer}\n")
+
+        text = "\n".join(text_parts)
+
+        await query.message.edit_text(
+            text,
+            parse_mode="Markdown",
+            reply_markup=faq_categories_kb()
+        )
+        return
+
+
+    # --- Программы ---
     if data == "menu_programs":
-        await query.message.edit_text("Выберите направление:",
-                                      reply_markup=directions_kb())
+        await query.message.edit_text("Выберите направление:", reply_markup=directions_kb())
         return
 
     if data.startswith("dir_"):
         dir_id = data.split("dir_", 1)[1]
         d = find_direction_by_id(dir_id)
         if not d:
-            await query.message.reply_text("Не найдено направление.",
-                                           reply_markup=back_to_main_kb())
+            await query.message.reply_text("Не найдено направление.", reply_markup=back_to_main_kb())
             return
         await query.message.edit_text(
             f"Направление: {d['name']}\nВыберите программу:",
-            reply_markup=programs_kb(dir_id))
+            reply_markup=programs_kb(dir_id)
+        )
         return
 
     if data.startswith("prog_"):
         prog_id = data.split("prog_", 1)[1]
         prog, direction = find_program_by_id(prog_id)
         if not prog:
-            await query.message.reply_text("Программа не найдена.",
-                                           reply_markup=back_to_main_kb())
+            await query.message.reply_text("Программа не найдена.", reply_markup=back_to_main_kb())
             return
         text = (
             f"Наименование программы: {prog['name']}\n"
@@ -172,38 +201,34 @@ async def callbacks(update: Update, context: ContextTypes.DEFAULT_TYPE):
             f"Форма обучения: {prog.get('form','-')}\n"
             f"Стоимость за 1 слушателя: {prog.get('price','-')}\n"
         )
-        await query.message.edit_text(
-            text,
-            reply_markup=program_detail_kb(prog_id, direction['id']))
+        await query.message.edit_text(text, reply_markup=program_detail_kb(prog_id, direction['id']))
         return
 
-    # начать заявку прямо из карточки
+    # --- Заявка ---
     if data.startswith("apply_prog_"):
         prog_id = data.split("apply_prog_", 1)[1]
         prog, direction = find_program_by_id(prog_id)
         if not prog:
-            await query.message.reply_text("Ошибка: программа не найдена.",
-                                           reply_markup=back_to_main_kb())
+            await query.message.reply_text("Ошибка: программа не найдена.", reply_markup=back_to_main_kb())
             return
-        # set context for FSM-like behavior
         context.user_data['apply_prog_id'] = prog_id
         context.user_data['state'] = 'awaiting_fio'
-        await query.message.reply_text("Вы выбрали программу:\n\n"
-                                       f"{prog['name']} ({direction['name']})\n\n"
-                                       f"Пожалуйста, введите ваши ФИО:")
+        await query.message.reply_text(
+            "Вы выбрали программу:\n\n"
+            f"{prog['name']} ({direction['name']})\n\n"
+            f"Пожалуйста, введите ваши ФИО:"
+        )
         return
 
-    # пользователь нажал "Оставить заявку" из главного меню
     if data == "menu_apply":
-        # запомним что пользователь пришёл через меню «оставить заявку»
         context.user_data['from_apply'] = True
         await query.message.edit_text(
-            "Сначала выберите направление, затем программу, на которую хотите оставить заявку:", reply_markup=directions_kb())
+            "Сначала выберите направление, затем программу, на которую хотите оставить заявку:",
+            reply_markup=directions_kb()
+        )
         return
 
-    # подтверждение
     if data == "confirm_yes":
-        # отправляем заявку в рабочий канал
         fio = context.user_data.get('fio')
         contact = context.user_data.get('contact')
         prog_id = context.user_data.get('apply_prog_id')
@@ -223,10 +248,8 @@ async def callbacks(update: Update, context: ContextTypes.DEFAULT_TYPE):
             f"Программа: {prog['name']} ({direction['name']})\n"
             f"Пользователь Telegram: {userinfo} (id={user.id})"
         )
-        # отправляем в канал
         try:
-            await context.bot.send_message(chat_id=CHANNEL_ID,
-                                           text=text_to_channel)
+            await context.bot.send_message(chat_id=CHANNEL_ID, text=text_to_channel)
         except Exception:
             logger.exception("Ошибка отправки в канал:")
             await query.message.reply_text("Ошибка при отправке заявки администратору. Свяжитесь, пожалуйста, напрямую.")
@@ -242,15 +265,12 @@ async def callbacks(update: Update, context: ContextTypes.DEFAULT_TYPE):
         context.user_data.clear()
         return
 
-    # fallback
     await query.message.reply_text("Неизвестная команда. Вернитесь в главное меню.", reply_markup=main_menu_kb())
 
 
 async def text_messages(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Обрабатываем текстовые ответы пользователя в процессе заявки."""
     state = context.user_data.get('state')
     if not state:
-        # если не в процессе заявки — подсказать
         await update.message.reply_text("Нажмите /start или используйте кнопки меню.", reply_markup=main_menu_kb())
         return
 
@@ -264,9 +284,10 @@ async def text_messages(update: Update, context: ContextTypes.DEFAULT_TYPE):
         context.user_data['contact'] = update.message.text.strip()
         prog_id = context.user_data.get('apply_prog_id')
         if not prog_id:
-            # возможно пользователь начал заявку через главное меню и не выбрал программу
-            # в таком случае предложим выбрать программу
-            await update.message.reply_text("Похоже, вы не выбрали программу. Пожалуйста, выберите программу через «Посмотреть программы».", reply_markup=main_menu_kb())
+            await update.message.reply_text(
+                "Похоже, вы не выбрали программу. Пожалуйста, выберите программу через «Посмотреть программы».",
+                reply_markup=main_menu_kb()
+            )
             context.user_data.clear()
             return
         prog, direction = find_program_by_id(prog_id)
@@ -281,7 +302,6 @@ async def text_messages(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(summary, reply_markup=confirm_kb())
         return
 
-    # default
     await update.message.reply_text("Не понимаю. Начните заново через главное меню:", reply_markup=main_menu_kb())
     context.user_data.clear()
 
@@ -291,8 +311,7 @@ def main():
 
     app.add_handler(CommandHandler("start", start_cmd))
     app.add_handler(CallbackQueryHandler(callbacks))
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND,
-                                   text_messages))
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, text_messages))
 
     logger.info("Bot started")
     app.run_polling()
