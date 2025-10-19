@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "chat-bot-moscowpolytechdpo",
+  "private_key_id": "7151f54f8009cc003bdcbe033e8738ea6139f5a7",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC0jCkVsJJZvC/W\nFrd9fDG+QctKiY8279MZHTe5RWDkI8xtsx/Ojvq2HrPiLmYS8BeAi6hWk9efrkh5\nZUkSPSjNxCRhaEQl3to6shxDMNE5vs6xm/PYznamIiIJ3rAMp3toubmvcrdKZeZi\nK1JME/fQ9rrI9mws2UaT3C9utfzBBWa8dhC53VynZRXH92QuU3/D6GiYrsoKPLvU\ntPq1Q3ZYqAaUFW8p5zo7nwOW8UsIa7i18jtGMPyrzs0ZmRq4PclOBqCyvlc8Aa3/\njrgSjnwiD79BRgc5iumf26pfehb8xN3qSo8moaHH+CqjMtHasljkJo+qB9JLmiCu\nMYjfezZhAgMBAAECggEAD2B8mKH65PT30gZfRwBj2ti5sAslN8BB52VV+0vjDlXU\n3Gb2x4iP5nZDoHjj2ABmJVw/pcKzs6A2q02AEAibcrhI15miFuOdtzAM44AYjGV+\n2cuhf2Pzi6oOjMP66dOohBPasmGqe1tQaCiuZVeyBzRsVh9UDpchbAhtwG0e2MWF\njc37xwnPZKkiNjcS8lho7N2oH6liMud7jMPb1GG89YCckQxm7GVuYPvQ2rogYA8u\nfblkPjcocXREOPxdo/eRSy0W8h0l3hMAX/LBWiR9RJTkJD6CB0uKp/C/VNIrbKCj\n8Z4EsA4951pjiVOr0yX6Nm9rA3gvt0gALWb3+ovSzQKBgQD9B/VgSn8rNw7eyLI1\nAf4+VAGkmzD0fyn4RwnC4GktT+gmNQRxGmzO5QZEMOtCZLfPq55i6ACV3Dp+PAQs\nBOReitwSs+7PgCtFAk2jfBH9DNF/kInZzItRgQtD2I8pccV51gZn/8eUPG6SLP8I\nuCTXkMvdlDBkliOpAkpIan3ovwKBgQC2qnrGzPNHUzwMIOQcxxAzshpdEjLxpRu7\nhAipnC8ebizscwTTCJj5rrVnsjSNBrqoYDTXowdKykmj6s9CMG1m5/46jwEQjW3B\n6E2x1MMfxf9V4e7gLw4mmVxSB7ZutN5vHuSqG0wS4kjHZOL3MO7EYDKuZ/HqFkfB\npcvx6diI3wKBgB0AxId9AoaZkQLITmT1DYdnaajMgRgFW3Ix8lR8FJI1Do8SlKfC\nN6afadB3KwA5Ozh6m3UK0sZar/m4N2I0TVjo4cDjDwSJ1Gvcj7mlhwpSZdERaDum\nznFRMVFdiUte1xvYBHP3RZEgPCxVLAZ71P1Ag52qVsGw0/WTZaBXVIdRAoGBAItK\njts/+Begof6BqlFDfthc7Puh4BUimXYxZcWoosmqrDkWMEyYlsZ28kADxUzxH687\nxa/V0r62aNdFPAy2DwbUy6lt2Rr9LgAam/yKSMzW2DFuWxC68Sh/88VdukDLTX8g\n6K/KpwUTZvodtXFX8ArxbFRQUUn2+XryagWsE4GzAoGAXcpMTImP3VN9sAMU5K+C\nJkciUbSrQGpdRKKWWJMta9XGVtn8ZJWNVDG/wVgUO1do3D9s7kOJPZHwLM7Ph9gR\nudr/9MwqNeLfxguSOsuTkiLM7tHAnNFkC7ve8JSeI5IA9JKhfxd/Gn1fNx6lcYw8\nKkqZa3265qvNE1c+ZWWxO6Y=\n-----END PRIVATE KEY-----\n",
+  "client_email": "firebase-adminsdk-fbsvc@chat-bot-moscowpolytechdpo.iam.gserviceaccount.com",
+  "client_id": "104375005271852441265",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-fbsvc%40chat-bot-moscowpolytechdpo.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
